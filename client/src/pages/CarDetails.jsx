@@ -1,9 +1,8 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import '../App.css';
 import ColorsAPI from '../services/ColorsAPI';
-import CarsAPI from '../services/CarsAPI';
+import CarsAPI from '../services/CustomizedCarsAPI';
 import InteriorsAPI from '../services/InteriorsAPI';
 import RoofsAPI from '../services/RoofsAPI';
 import WheelsAPI from '../services/WheelsAPI';
@@ -11,12 +10,8 @@ import WheelsAPI from '../services/WheelsAPI';
 const CarDetails = () => {
     const { id } = useParams();
     const [car, setCar] = useState({
-        name: '', color: '', interior: '', roof: '', wheels: '', price: 0
+        name: '', colorId: '', interiorId: '', roofId: '', wheelId: '', price: 0
     });
-    const [colorOptions, setColorOptions] = useState([]);
-    const [interiorOptions, setInteriorOptions] = useState([]);
-    const [roofOptions, setRoofOptions] = useState([]);
-    const [wheelsOptions, setWheelsOptions] = useState([]);
 
     const deleteCar = async (event) => {
         event.preventDefault();
@@ -24,22 +19,23 @@ const CarDetails = () => {
         window.location = '/';
     };
 
-    const fetchData = async (APIFunction, setter) => {
-        try {
-            const data = await APIFunction();
-            setter(data);
-        } catch (error) {
-            throw error;
-        }
-    }
-
     useEffect(() => {
-        fetchData(CarsAPI.getCarById(id), setCar);
-        fetchData(ColorsAPI.getAllColors, setColorOptions);
-        fetchData(InteriorsAPI.getAllInteriors, setInteriorOptions);
-        fetchData(RoofsAPI.getAllRoofs, setRoofOptions);
-        fetchData(WheelsAPI.getAllWheels, setWheelsOptions);
-    }, []);
+        (async () => {
+            try {
+                const fetchedCar = await CarsAPI.getCarById(id);
+                
+                // Fetching details for each option based on their IDs
+                fetchedCar.color = (await ColorsAPI.getColorById(fetchedCar.colorId)).name;
+                fetchedCar.interior = (await InteriorsAPI.getInteriorById(fetchedCar.interiorId)).name;
+                fetchedCar.roof = (await RoofsAPI.getRoofById(fetchedCar.roofId)).name;
+                fetchedCar.wheels = (await WheelsAPI.getWheelById(fetchedCar.wheelId)).name;
+                
+                setCar(fetchedCar);
+            } catch (error) {
+                console.error('Error fetching car details:', error);
+            }
+        })();
+    }, [id]);
 
     return (
         <article>
@@ -50,20 +46,16 @@ const CarDetails = () => {
             
             <div className='horizontal-float-section'>
                 <div className='vertical-float-section'>
-                    <img src={car.color.length > 0 && colorOptions.length > 0 ? colorOptions.filter((color) => color.name === car.color)[0].image : ""} alt="" className="option-img" />
-                    <p className='option-label'>Color: {car.color}</p>
+                    <p className='option-label'>🎨 Color: {car.color}</p>
                 </div>
                 <div className='vertical-float-section'>
-                    <img src={car.interior.length > 0 && interiorOptions.length > 0 ? interiorOptions.filter((interior) => interior.name === car.interior)[0].image : ""} alt="" className="option-img" />
-                    <p className='option-label'>Interior: {car.interior}</p>
+                    <p className='option-label'>🪑 Interior: {car.interior}</p>
                 </div>
                 <div className='vertical-float-section'>
-                    <img src={car.roof.length > 0 && roofOptions.length > 0 ? roofOptions.filter((roof) => roof.name === car.roof)[0].image : ""} alt="" className="option-img" />
-                    <p className='option-label'>Roof: {car.roof}</p>
+                    <p className='option-label'>🔝 Roof: {car.roof}</p>
                 </div>
                 <div className='vertical-float-section'>
-                    <img src={car.wheels.length > 0 && wheelsOptions.length > 0 ? wheelsOptions.filter((wheel) => wheel.name === car.wheels)[0].image : ""} alt="" className="option-img" />
-                    <p className='option-label'>Wheels: {car.wheels}</p>
+                    <p className='option-label'>🔘 Wheels: {car.wheels}</p>
                 </div>
             </div>
 

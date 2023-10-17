@@ -16,8 +16,8 @@ The following **required** functionality is completed:
 - [x] **The web app uses React to display data from the API**
 - [x] **Users can view a list of options they can select for different aspects of a `CustomCar`**
 - [ ] **On selecting each option, the displayed visual icon for the `CustomCar` updates to match the option the user chose**
-- [ ] **The user can submit their choices to save the car to the list of created `CustomCar`**
-- [ ] **If a user submits a feature combo that is impossible, they should receive an appropriate error message and the item should not be saved to the database**
+- [x] **The user can submit their choices to save the car to the list of created `CustomCar`**
+- [x] **If a user submits a feature combo that is impossible, they should receive an appropriate error message and the item should not be saved to the database**
 - [ ] **The app displays the total price of all features**
 - [ ] **Users can view a list of all submitted `CustomCar`**
 - [ ] **Users can edit or delete a submitted `CustomCar` from the list view of submitted `CustomCar`**

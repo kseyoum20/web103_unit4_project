@@ -1,135 +1,160 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
+import CustomizedCarsAPI from '../services/CustomizedCarsAPI';
 import CarsAPI from '../services/CarsAPI';
+import ColorsAPI from '../services/ColorsAPI';
 import InteriorsAPI from '../services/InteriorsAPI';
 import RoofsAPI from '../services/RoofsAPI';
 import WheelsAPI from '../services/WheelsAPI';
 
 const CreateCar = () => {
-    const [car, setCar] = useState({name: '', interior: '', roof: '', wheel: ''});
+    const [car, setCar] = useState({
+        car_id: '', 
+        color_id: '',
+        roof_id: '',
+        wheel_id: '',
+        interior_id: '',
+        total_price: 0,
+        name: ''
+    });  // Use IDs
     const [interiorOptions, setInteriorOptions] = useState([]);
+    const [colorOptions, setColorsOptions] = useState([]);
+    const [carOptions, setCarsOptions] = useState([]);
     const [roofOptions, setRoofOptions] = useState([]);
     const [wheelsOptions, setWheelsOptions] = useState([]);
     const [showMissing, setShowMissing] = useState(false);
+    const [feedback, setFeedback] = useState('');  // To provide feedback to the user
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        const newCar = {...car};
-        newCar[name] = value;
-        setCar(newCar);
+        let updatedPrice = car.total_price;
+    
+        if (name === "car_id") {
+            const selectedCar = carOptions.find(c => c.car_id === value);
+            updatedPrice += selectedCar ? selectedCar.base_price : 0;
+        } else if (name === "interior_id") {
+            const selectedInterior = interiorOptions.find(c => c.interior_id === value);
+            updatedPrice += selectedInterior ? selectedInterior.additional_price : 0;
+        }else if (name === "roof_id") {
+            const selectedRoof = roofOptions.find(c => c.roof_id === value);
+            updatedPrice += selectedRoof ? selectedRoof.additional_price : 0;
+        }else if (name === "wheel_id") {
+            const selectedWheel = wheelsOptions.find(c => c.wheel_id === value);
+            updatedPrice += selectedWheel ? selectedWheel.additional_price : 0;
+        }
+        // ... repeat for other dropdowns ...
+    
+        setCar(prevCar => ({ ...prevCar, [name]: value, total_price: updatedPrice }));
     }
+    
 
     const createCar = async (event) => {
         event.preventDefault();
-        if(car.interior.length === 0 || car.roof.length === 0 || car.wheel.length === 0 || car.name.length === 0) {
+        console.log(!car.color)
+        if(!car.interior_id || !car.roof_id || !car.wheel_id || !car.car_id || !car.name || !car.color_id) {
             setShowMissing(true);
             return;
         }
-        await CarsAPI.createCar(car);
-        window.location = '/';
+        try {
+            await CustomizedCarsAPI.createCustomizedCar(car);
+            setFeedback('Car created successfully!');  // Provide feedback
+        } catch (error) {
+            setFeedback('Error creating car. Please try again.');
+        }
+    }
+
+    const fetchData = async (apiCall, setData) => {
+        try {
+            const data = await apiCall();
+            setData(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     }
 
     useEffect(() => {
-        (async () => {
-            try {
-                const data = await InteriorsAPI.getAllInteriors();
-                setInteriorOptions(data);
-            } catch (error) {
-                throw error;
-            }
-        }) ();
-    }, []);
+        fetchData(InteriorsAPI.getAllInteriors, setInteriorOptions);
+        fetchData(RoofsAPI.getAllRoofs, setRoofOptions);
+        fetchData(WheelsAPI.getAllWheels, setWheelsOptions);
+        fetchData(CarsAPI.getAllCars, setCarsOptions);
+        fetchData(ColorsAPI.getAllColors, setColorsOptions);
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const data = await RoofsAPI.getAllRoofs();
-                setRoofOptions(data);
-            } catch (error) {
-                throw error;
-            }
-        }) ();
-    }, []);
-
-    useEffect(() => {
-        (async () => {
-            try {
-                const data = await WheelsAPI.getAllWheels();
-                setWheelsOptions(data);
-            } catch (error) {
-                throw error;
-            }
-        }) ();
     }, []);
 
     return (
         <article>
-            
-            <div>
-                <details open>
-                    <summary>
-                        Interior
-                        {showMissing && car.interior.length === 0 && (<span className='warning-text'> Please select one.</span>)}
-                    </summary>
-                    {interiorOptions && interiorOptions.map.length > 0 && (
-                        <div className='grid'>
-                            {interiorOptions.map((interior) => (
-                                <div key={interior.name} className='vertical-float-section'>
-                                    <img src={interior.image} alt="" className="option-img" />
-                                    <label className='option-label'>{interior.name}</label>
-                                    <input type='radio' name='interior' value={interior.name} onChange={handleChange} />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </details>
-
-                <details>
-                    <summary>
-                        Roof
-                        {showMissing && car.roof.length === 0 && (<span className='warning-text'> Please select one.</span>)}
-                    </summary>
-                    {roofOptions && roofOptions.map.length > 0 && (
-                        <div className='grid'>
-                            {roofOptions.map((roof) => (
-                                <div key={roof.name} className='vertical-float-section'>
-                                    <img src={roof.image} alt="" className="option-img" />
-                                    <label className='option-label'>{roof.name}</label>
-                                    <input type='radio' name='roof' value={roof.name} onChange={handleChange} />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </details>
-
-                <details>
-                    <summary>
-                        Wheels
-                        {showMissing && car.wheel.length === 0 && (<span className='warning-text'> Please select one.</span>)}
-                    </summary>
-                    {wheelsOptions && wheelsOptions.map.length > 0 && (
-                        <div className='grid'>
-                            {wheelsOptions.map((wheel) => (
-                                <div key={wheel.name} className='vertical-flow-section'>
-                                <img src={wheel.image} alt="" className="option-img" />
-                                <label className='option-label'>{wheel.name}</label>
-                                <input type='radio' name='wheel' value={wheel.name} onChange={handleChange} />
-                                </div>
-                                ))}
-                                </div>
-                                )}
-                                </details>
-                                </div>
-                                <div className='horizontal-float-section'>
-            <label htmlFor="name">
-                <input type="text" name="name" placeholder='Name your car' onChange={handleChange} />
-            </label>
-            <button onClick={createCar}>Order</button>
-        </div>
-
-        {showMissing && car.name.length === 0 && (<span className='warning-text'> Please name the car.</span>)}
-    </article>
-)
+            <form onSubmit={createCar}>
+                <label>
+                    Car Name:
+                    <input 
+                        type="text" 
+                        name="name" 
+                        value={car.name}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    CarModel:
+                    <select name="car_id" value={car.car_id} onChange={handleChange}>
+                        <option value="">Select CarModel</option>
+                        {carOptions.map(car => (
+                            <option key={car.car_id} value={car.car_id}>
+                                {car.model_name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Color:
+                    <select name="color_id" value={car.color_id} onChange={handleChange}>
+                        <option value="">Select Color</option>
+                        {colorOptions.map(color => (
+                            <option key={color.color_id} value={color.color_id}>
+                                {color.color_name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Interior:
+                    <select name="interior_id" value={car.interior_id} onChange={handleChange}>
+                        <option value="">Select Interior</option>
+                        {interiorOptions.map(interior => (
+                            <option key={interior.interior_id} value={interior.interior_id}>
+                                {interior.material}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Roof:
+                    <select name="roof_id" value={car.roof_id} onChange={handleChange}>
+                        <option value="">Select Roof</option>
+                        {roofOptions.map(roof => (
+                            <option key={roof.roof_id} value={roof.roof_id}>
+                                {roof.type}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    Wheels:
+                    <select name="wheel_id" value={car.wheel_id} onChange={handleChange}>
+                        <option value="">Select Wheels</option>
+                        {wheelsOptions.map(wheel => (
+                            <option key={wheel.wheel_id} value={wheel.wheel_id}>
+                                {wheel.wheel_type}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <button type="submit">Create Car</button>
+            </form>
+            <div style={{float: 'right', marginTop: '20px'}}>Total Price: ${car.total_price}</div>
+            {showMissing && <div className="error-text">All fields are required.</div>}
+            <div className='feedback-text'>{feedback}</div>
+        </article>
+    )
+    
 }
 export default CreateCar;

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 // Import the routers from your routes files
+import customizedCarsRouter from './routes/customizedCars.js';
 import carsRouter from './routes/cars.js';
 import colorsRouter from './routes/colors.js';
 import roofsRouter from './routes/roofs.js';
@@ -29,6 +30,7 @@ else if (process.env.NODE_ENV === 'production') {
 }
 
 // Specify the API path for the server to use
+app.use('/api/customized_cars', customizedCarsRouter);
 app.use('/api/cars', carsRouter);
 app.use('/api/colors', colorsRouter);
 app.use('/api/roofs', roofsRouter);
