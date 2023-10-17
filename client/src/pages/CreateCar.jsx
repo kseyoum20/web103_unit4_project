@@ -27,25 +27,33 @@ const CreateCar = () => {
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        let updatedPrice = car.total_price;
     
-        if (name === "car_id") {
-            const selectedCar = carOptions.find(c => c.car_id === value);
-            updatedPrice += selectedCar ? selectedCar.base_price : 0;
-        } else if (name === "interior_id") {
-            const selectedInterior = interiorOptions.find(c => c.interior_id === value);
-            updatedPrice += selectedInterior ? selectedInterior.additional_price : 0;
-        }else if (name === "roof_id") {
-            const selectedRoof = roofOptions.find(c => c.roof_id === value);
-            updatedPrice += selectedRoof ? selectedRoof.additional_price : 0;
-        }else if (name === "wheel_id") {
-            const selectedWheel = wheelsOptions.find(c => c.wheel_id === value);
-            updatedPrice += selectedWheel ? selectedWheel.additional_price : 0;
-        }
-        // ... repeat for other dropdowns ...
+        // Update the current field first
+        const updatedCar = { ...car, [name]: value };
     
+        let updatedPrice = 0;
+    
+        // Add car base price
+        const selectedCar = carOptions.find(c => c.car_id.toString() === updatedCar.car_id);
+        updatedPrice += selectedCar ? selectedCar.base_price : 0;
+    
+        // Add interior price
+        const selectedInterior = interiorOptions.find(c => c.interior_id.toString() === updatedCar.interior_id);
+        updatedPrice += selectedInterior ? selectedInterior.additional_price : 0;
+    
+        // Add roof price
+        const selectedRoof = roofOptions.find(c => c.roof_id.toString() === updatedCar.roof_id);
+        updatedPrice += selectedRoof ? selectedRoof.additional_price : 0;
+    
+        // Add wheel price
+        const selectedWheel = wheelsOptions.find(c => c.wheel_id.toString() === updatedCar.wheel_id);
+        updatedPrice += selectedWheel ? selectedWheel.additional_price : 0;
+    
+        // Now update the state
         setCar(prevCar => ({ ...prevCar, [name]: value, total_price: updatedPrice }));
     }
+    
+    
     
 
     const createCar = async (event) => {

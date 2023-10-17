@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import '../App.css';
 import ColorsAPI from '../services/ColorsAPI';
-import CarsAPI from '../services/CustomizedCarsAPI';
+import CustomizedCarsAPI from '../services/CustomizedCarsAPI';
 import InteriorsAPI from '../services/InteriorsAPI';
 import RoofsAPI from '../services/RoofsAPI';
 import WheelsAPI from '../services/WheelsAPI';
@@ -10,7 +10,13 @@ import WheelsAPI from '../services/WheelsAPI';
 const CarDetails = () => {
     const { id } = useParams();
     const [car, setCar] = useState({
-        name: '', colorId: '', interiorId: '', roofId: '', wheelId: '', price: 0
+        car_id: '', 
+        color_id: '',
+        roof_id: '',
+        wheel_id: '',
+        interior_id: '',
+        total_price: 0,
+        name: ''
     });
 
     const deleteCar = async (event) => {
@@ -22,13 +28,13 @@ const CarDetails = () => {
     useEffect(() => {
         (async () => {
             try {
-                const fetchedCar = await CarsAPI.getCarById(id);
+                const fetchedCar = await CustomizedCarsAPI.getCustomizedCarById(id);
                 
                 // Fetching details for each option based on their IDs
-                fetchedCar.color = (await ColorsAPI.getColorById(fetchedCar.colorId)).name;
-                fetchedCar.interior = (await InteriorsAPI.getInteriorById(fetchedCar.interiorId)).name;
-                fetchedCar.roof = (await RoofsAPI.getRoofById(fetchedCar.roofId)).name;
-                fetchedCar.wheels = (await WheelsAPI.getWheelById(fetchedCar.wheelId)).name;
+                fetchedCar.color = (await ColorsAPI.getColorById(fetchedCar.color_id)).color_name;
+                fetchedCar.interior = (await InteriorsAPI.getInteriorById(fetchedCar.interior_id)).material;
+                fetchedCar.roof = (await RoofsAPI.getRoofById(fetchedCar.roof_id)).type;
+                fetchedCar.wheels = (await WheelsAPI.getWheelById(fetchedCar.wheel_id)).wheel_type;
                 
                 setCar(fetchedCar);
             } catch (error) {
@@ -41,7 +47,7 @@ const CarDetails = () => {
         <article>
             <div className='horizontal-float-section'>
                 <h3>{car.name}</h3>
-                <p>Price: ${car.price}</p>
+                <p>Price: ${car.total_price}</p>
             </div>
             
             <div className='horizontal-float-section'>
